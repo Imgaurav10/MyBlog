@@ -2,11 +2,13 @@ package com.Springboot.blog.service.impl;
 
 import com.Springboot.blog.entity.Comment;
 import com.Springboot.blog.entity.Post;
+import com.Springboot.blog.exception.BlogAPIException;
 import com.Springboot.blog.exception.ResourceNotFoundException;
 import com.Springboot.blog.payload.CommentDto;
 import com.Springboot.blog.repository.CommentRepository;
 import com.Springboot.blog.repository.PostRepository;
 import com.Springboot.blog.service.CommentService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,6 +43,21 @@ public class CommentServiceImpl implements CommentService {
         List<Comment> comments = commentRepo.findByPostId(postId);
         List<CommentDto> dtos = comments.stream().map(comment -> mapToDto(comment)).collect(Collectors.toList());
         return dtos;
+    }
+
+    @Override
+    public CommentDto getCommentById(long postId, long commentId) {
+        Post post=postRepo.findById(postId).orElseThrow(
+                ()-> new ResourceNotFoundException("Post","id",postId)
+        );
+        Comment comment = commentRepo.findById(commentId).orElseThrow(
+                () -> new ResourceNotFoundException("Comment", "commentId", commentId)
+        );
+       /* if(!comment.getPost().getId().equals(post.getId())){
+            throw  new BlogAPIException(HttpStatus.BAD_REQUEST,"Comment cannot be Fould with id: "+postId);
+        }*/
+       return mapToDto(comment);
+
     }
 
     Comment mapToEntity(CommentDto commentDto){
